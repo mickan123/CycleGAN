@@ -1,4 +1,5 @@
 import tensorflow as tf
+from ops import lrelu
 
 def resnet_block(input_res, dim):
 	out_res = tf.layers.conv2d(input_res, dim, 3, 1, padding = 'same', activation = lrelu)
@@ -6,7 +7,7 @@ def resnet_block(input_res, dim):
 	return input_res + out_res
 
 #Builds a generator model for our cycleGAN
-def build_generator(self, inputs, name):
+def build_generator(inputs, name):
 
 	with tf.variable_scope(name):
 		conv_1 = tf.layers.conv2d(inputs, 32, 3, 1, padding = 'same', activation = lrelu)
@@ -25,7 +26,7 @@ def build_generator(self, inputs, name):
 		return out
 
 #Builds a discriminator model for our cycleGAN
-def build_discriminator(self, inputs, name):
+def build_discriminator(inputs, name):
 
 	with tf.variable_scope(name):
 		conv_1 = tf.layers.conv2d(inputs, 32, 4, 2, padding = 'same', activation = lrelu)

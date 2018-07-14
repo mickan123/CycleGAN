@@ -40,46 +40,6 @@ class model(object):
 		self.build_model()
 		self.train_model()
 
-	#Builds a generator model for our cycleGAN
-	def build_generator(self, inputs, name):
-
-		def resnet_block(input_res, dim):
-			out_res = tf.layers.conv2d(input_res, dim, 3, 1, padding = 'same', activation = lrelu)
-			out_res = tf.layers.conv2d(input_res, dim, 3, 1, padding = 'same', activation = lrelu)
-			return input_res + out_res
-
-		with tf.variable_scope(name):
-			conv_1 = tf.layers.conv2d(inputs, 32, 3, 1, padding = 'same', activation = lrelu)
-			conv_2 = tf.layers.conv2d(conv_1, 32, 3, 2, padding = 'same', activation = lrelu)
-			conv_3 = tf.layers.conv2d(conv_2, 32, 3, 2, padding = 'same', activation = lrelu)
-			net = conv_3
-			for _ in range(4):
-				net = resnet_block(net, 32)
-			net += conv_3
-
-			conv_4 = tf.layers.conv2d_transpose(net, 32, 3, 2, padding = 'same', activation = lrelu)
-			conv_5 = tf.layers.conv2d_transpose(conv_4, 32, 3, 2, padding = 'same', activation = lrelu)
-			conv_6 = tf.layers.conv2d_transpose(conv_5, 3, 3, 1, padding = 'same', activation = lrelu)
-			out = tf.nn.tanh(conv_6)
-
-			return out
-
-	#Builds a discriminator model for our cycleGAN
-	def build_discriminator(self, inputs, name):
-
-		with tf.variable_scope(name):
-			conv_1 = tf.layers.conv2d(inputs, 32, 4, 2, padding = 'same', activation = lrelu)
-			conv_2 = tf.layers.conv2d(conv_1, 64, 4, 2, padding = 'same', activation = lrelu)
-			conv_3 = tf.layers.conv2d(conv_2, 128, 4, 2, padding = 'same', activation = lrelu)
-			conv_4 = tf.layers.conv2d(conv_3, 256, 4, 2, padding = 'same', activation = lrelu)
-			
-			conv_5 = tf.layers.conv2d(conv_4, 1, 4, 1, padding = 'same', activation = lrelu)
-
-			flat = tf.layers.Flatten()(conv_5)
-			logits = tf.layers.dense(flat, 1)
-
-			return logits
-
 	def build_model(self):
 
 		with tf.variable_scope("Model") as scope:
@@ -87,17 +47,17 @@ class model(object):
 			self.input_A = tf.placeholder(tf.float32, [None, self.image_dim, self.image_dim, 3], name="inputA")
 			self.input_B = tf.placeholder(tf.float32, [None, self.image_dim, self.image_dim, 3], name="inputB")
 
-			self.gen_B = self.build_generator(self.input_A, name = "GenAtoB")
-			self.gen_A = self.build_generator(self.input_B, name = "GenBtoA")
-			self.dec_A = self.build_discriminator(self.input_A, name = "DiscA")
-			self.dec_B = self.build_discriminator(self.input_B, name = "DiscB")
+			self.gen_B = build_generator(self.input_A, name = "GenAtoB")
+			self.gen_A = build_generator(self.input_B, name = "GenBtoA")
+			self.dec_A = build_discriminator(self.input_A, name = "DiscA")
+			self.dec_B = build_discriminator(self.input_B, name = "DiscB")
 
 			scope.reuse_variables()
 
-			self.dec_gen_A = self.build_discriminator(self.gen_A, "DiscA")
-			self.dec_gen_B = self.build_discriminator(self.gen_B, "DiscB")
-			self.cyc_A = self.build_generator(self.gen_B, "GenBtoA")
-			self.cyc_B = self.build_generator(self.gen_A, "GenAtoB")
+			self.dec_gen_A = build_discriminator(self.gen_A, "DiscA")
+			self.dec_gen_B = build_discriminator(self.gen_B, "DiscB")
+			self.cyc_A = build_generator(self.gen_B, "GenBtoA")
+			self.cyc_B = build_generator(self.gen_A, "GenAtoB")
 
 			scope.reuse_variables()
 

@@ -11,8 +11,8 @@ from random import shuffle
 def load_images(size, path):
 	image_list = []
 	for i, image_path in enumerate(glob.glob(path + "/*")):
-		image = misc.imread(image_path)
-		image = misc.imresize(image, [size, size])
+		image = misc.imread(image_path, mode = 'RGB')
+		image = misc.imresize(image, [size, size, 3])
 		image = (image / 127.5) - 1
 		image_list.append(image)
 	
