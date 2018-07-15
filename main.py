@@ -135,12 +135,14 @@ class model(object):
 
 			self.saver = tf.train.Saver()
 			
+			start_it = 0
 			if (self.load_model != None):
 				self.saver = tf.train.import_meta_graph('Training Model/' + self.load_model)
 				self.saver.restore(self.sess, tf.train.latest_checkpoint('Training Model/'))
+				#Extract the iteration from load_model string
+				start_it = int((self.load_model.split('.')[-2]).split('-')[-1])
 
-
-			for self.it in range(1, self.max_iterations):
+			for self.it in range(start_it, self.max_iterations):
 
 				feed = {self.input_A : self.next_batch(self.images_A, self.it), 
                         self.input_B : self.next_batch(self.images_B, self.it)}
